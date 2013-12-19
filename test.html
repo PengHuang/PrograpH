@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+.bar rect{
+  fill:#87CEFA;
+}
+.bar text{
+  font-size: 24px
+}
+.barchart .axis path{
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+.barchart .axis line{
+  shape-rendering: crispEdges;
+  stroke: #000;
+}
+/*
+.axis path {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.axis line {
+  shape-rendering: crispEdges;
+  stroke: #000;
+}*/
+</style>
+<body>
+<button id="test_init">init</button>
+<button id="test_exit">exit</button>
+<button id="test_redraw">redraw</button>
+<button id="test_update">update</button>
+
+<div id="test1"></div>
+<div id="test2"></div>
+</body>
+<script src="jquery-1.9.1.js"></script>
+<script src="d3.v3.min.js"></script>
+<script src="barchart.js"></script>
+<script>
+(function(){
+  var args = {
+                containerID:"test1",
+                data:[{name:"male",value:10000},{name:"female",value:20000},{name:"mid",value:15000}],
+                axis:{horizontal:false}
+              }
+
+  var args_redraw = {
+                containerID:"test1",
+                data:[{name:"kk",value:5000}],
+                axis:{horizontal:false}
+              }
+  var args_update = {
+                containerID:"test2",
+                data:[{name:"male",value:5000},{name:"female",value:2000},{name:"mid",value:15000}],
+                axis:{horizontal:false}
+              }
+  var addtion = [{name:"male",value:2000},{name:"female",value:10000},{name:"mid",value:8000}]
+  var A = hp.barchart(args)
+  // var B = hp.barchart(args2)
+  // setInterval(A.update(args2.data),100000)
+  $("#test_init").click(function(){
+    // B.update(args1.data)
+    A.init(args)
+  })
+  $("#test_exit").click(function(){
+    // B.update(args1.data)
+    A.exit()
+  })
+  $("#test_redraw").click(function(){
+    // B.update(args1.data)
+    A.redraw(args_redraw)
+  })
+  $("#test_update").click(function(){
+    // B.update(args1.data)
+    A.update(addtion)
+  })
+})()
+
+
+
+// setInterval(chartB.update(args2.data),10000)
+// hp.barchart()
+</script>
