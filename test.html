@@ -5,18 +5,29 @@
 .bar rect{
   fill:#87CEFA;
 }
-.bar text{
+/*.bar text{
   font-size: 24px
-}
+}*/
 .barchart .axis path{
   fill: none;
   stroke: #000;
+  stroke-width:2px;
   shape-rendering: crispEdges;
 }
 .barchart .axis line{
   shape-rendering: crispEdges;
   stroke: #000;
 }
+.barchart .axis text{
+  font-size: 24px
+}
+.barchart .tick line{
+  stroke: #eee;
+  opacity: 0.5
+}
+/*.barchart .text{
+  font-size: 24px
+}*/
 /*
 .axis path {
   fill: none;
@@ -30,55 +41,128 @@
 }*/
 </style>
 <body>
-<button id="test_init">init</button>
+<button id="test_hide">hide</button>
+<button id="test_show">show</button>
+<button id="test_fade">fade</button>
 <button id="test_exit">exit</button>
-<button id="test_redraw">redraw</button>
+<button id="test_reset">reset</button>
 <button id="test_update">update</button>
+<button id="test">test</button>
 
-<div id="test1"></div>
-<div id="test2"></div>
+<div id="test1">Test all default setting</div>
+<div id="test2">Test horizontal</div>
+<div id="test3">Test auto adjustment</div>
+<div id="test4">Test self defined size</div>
 </body>
 <script src="lib/jquery-1.9.1.js"></script>
 <script src="lib/d3.v3.min.js"></script>
-<script src="src/barchart.js"></script>
+<script src="src/barchart_old.js"></script>
+<!-- <script src="src/multichart.js"></script> -->
 <script>
 (function(){
-  var args = {
-                containerID:"test1",
-                data:[{name:"male",value:10000},{name:"female",value:20000},{name:"mid",value:15000}],
-                axis:{horizontal:false}
+  var test1 = { 
+                description:"test all default setting",
+                data:[{name:"ag1",value:1},{name:"ag2",value:2},{name:"ag3",value:3},{name:"ag4",value:4},{name:"ag5",value:5}],
               }
+  var test2 = { 
+                description:"test horizontal",
+                containerID:"test1",
+                data:[{name:"ag1",value:1},{name:"ag2",value:2},{name:"ag3",value:3},{name:"ag4",value:4},{name:"ag5",value:5}],
+                axis:{horizontal:true},
+                layout:{auto:true}
+              }
+  var test3 = { 
+                description:"test auto adjustment",
+                containerID:"test3",
+                data:[{name:"ag1",value:1},{name:"ag2",value:2},{name:"ag3",value:3},{name:"ag4",value:4},{name:"ag5",value:5}],
+                layout:{auto:true}
+              }
+  var test4 = { 
+                description:"test self defined size",
+                containerID:"test4",
+                data:[{name:"ag1",value:1},{name:"ag2",value:2},{name:"ag3",value:3},{name:"ag4",value:4},{name:"ag5",value:5}],
+                layout:{width:500,height:200,margin:{left:50,right:50,top:50,bottom:50}}
+              }
+
+
+  var testA = hp.barchart(test3)
+  var testB = hp.barchart(test2)
+
+  // var testB = hp.multichart(test2)
+  // var testC = hp.barchart(test3)
+  // var testD = hp.barchart(test4)
+
 
   var args_redraw = {
                 containerID:"test1",
                 data:[{name:"kk",value:5000}],
-                axis:{horizontal:false}
+                axis:{horizontal:true}
               }
   var args_update = {
                 containerID:"test2",
                 data:[{name:"male",value:5000},{name:"female",value:2000},{name:"mid",value:15000}],
-                axis:{horizontal:false}
+                axis:{horizontal:true},
+                layout:{width:600}
               }
-  var addtion = [{name:"male",value:2000},{name:"female",value:10000},{name:"mid",value:8000}]
-  var A = hp.barchart(args)
+  var addtion = [{name:"new1",value:2000},{name:"female",value:10000},{name:"mid",value:8000}]
+  // var B = hp.barchart(args_update)
+  
   // var B = hp.barchart(args2)
   // setInterval(A.update(args2.data),100000)
-  $("#test_init").click(function(){
+  $("#test_hide").click(function(){
     // B.update(args1.data)
-    A.init(args)
+    testA.hide()
   })
   $("#test_exit").click(function(){
     // B.update(args1.data)
-    A.exit()
+    testA.exit()
   })
-  $("#test_redraw").click(function(){
+  $("#test_reset").click(function(){
     // B.update(args1.data)
-    A.redraw(args_redraw)
+    testA.reset()
+  })
+  $("#test_show").click(function(){
+    // B.update(args1.data)
+    testA.show()
+  })
+  $("#test_fade").click(function(){
+    // B.update(args1.data)
+    testA.fade(0.4)
   })
   $("#test_update").click(function(){
     // B.update(args1.data)
-    A.update(addtion)
+    testA.update(addtion)
   })
+  $("#test").click(function(){
+    // B.update(args1.data)
+  })
+  var svgC = svgContainer("test2")
+  svgC.add(testA)
+
+  function svgContainer(divID){
+    var svgs = []
+    var svgID = 0
+
+    var svgContainer = {}
+
+    svgContainer.add = function(graph){
+        svg_container().append("g").attr("id","svg_"+svgID);
+        graph.addtosvg("svg_"+svgID,500,300)
+    }
+    svgContainer.ID = "testSVG"
+
+    function svg_container(){
+        return d3.select("#"+divID).select("svg")
+      }
+    function init(){
+        createContainer()
+      }
+      function createContainer(){
+        d3.select("#"+divID).append("svg").attr("id","testSVG")
+      } 
+    init()
+    return svgContainer
+  }
 })()
 
 

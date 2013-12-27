@@ -1,14 +1,193 @@
+//global parameters
 var hp = hp||{"ID_counter":0,"events":{"resize":[]}}
 
+hp.graph = HP_graph;
+hp.chart = HP_chart;
 hp.barchart = HP_barchart;
+
+
+/**
+ * Create and draw a new graph.
+ * 
+ * Arguments:
+ *   containerId => id of container to insert SVG. [REQUIRED]
+ *   width => the width of the svg canvas. Default:960 [OPTIONAL]
+ *   height => the height of the svg canvas. Default:500 [OPTIONAL]
+ *   auto => automatically adjust the size based on the container size. Default:false [OPTIONAL]
+ */
+function HP_graph(args){
+	var graph = {}
+
+	function init(){
+		graph.svgID = hp.ID_counter += 1;
+
+		//set the Default values
+		graph.width = 960;
+		graph.height = 500;
+		graph.auto = false;
+		graph.scale = 1;
+		parseArgs();
+		createGraph();
+	}	
+
+	function parseArgs(){
+		graph.containerID = args.containerID;
+		if(args.width) graph.width = args.width;
+		if(args.height) graph.height = args.height;
+		if(args.auto) graph.auto = args.auto;
+	}
+
+	function createGraph(){
+		var width = graph.width,
+			height = graph.height
+
+
+		d3.select("#"+graph.containerID)
+			.append("svg")
+			.attr("width",width)
+			.attr("height",height)
+			.attr("id","svg_"+graph.svgID);
+
+
+		graph.container = get_container;
+		graph.svg = get_svg;
+		graph.exit = exit;
+		graph.hide = hide;
+		graph.show = show;
+		graph.fade = fade;
+
+		register_resize();
+		show();
+	}
+
+	function get_container(){
+		return d3.select("#"+graph.containerID)
+	}
+	function get_svg(){
+		return graph.container().select("#svg_"+graph.svgID)
+	}
+	function hide(animation){
+		get_svg().transition().duration(500).attr("opacity",0)
+	}
+	function show(){
+		get_svg().transition().duration(500).attr("opacity",1)
+	}
+	function fade(para){
+		get_svg().transition().duration(500).attr("opacity",para)
+	}
+	function exit(){
+		get_svg().remove()
+	}
+
+	function register_resize(){
+		if(graph.auto){
+			resize();
+			window.addEventListener("resize",resize);
+		};
+	}
+
+	function resize(){
+		var current_width = parseInt(d3.select("#"+graph.containerID).style('width'));
+		graph.scale = current_width/graph.width;
+		graph.svg().attr("width",graph.width*graph.scale).attr("height",graph.height*graph.scale)
+	}
+
+	function args_check(){
+		if(args){
+			if(args.containerID){
+				return true;
+			}
+		}
+		return false;
+	}
+
+	if(args_check()) init();
+
+	return graph;
+}
+
+
+
+
+
+/**
+ * Create and draw a new graph.
+ * 
+ * Arguments:
+ *   width => the width of the svg canvas. Default:960 [OPTIONAL]
+ *   height => the height of the svg canvas. Default:500 [OPTIONAL]
+ *   margin => a dictionary containing the margin infomation. [OPTIONAL]
+ *                  Default:{left:100,right:100,top:50,bottom:50}
+ *   auto => automatically adjust the size based on the container size. Default:false [OPTIONAL]
+ */
+function HP_chart(args){
+	var chart = {}
+
+	function init(){
+		chart = hp.graph(args)
+		chart.margin = {top:100,bottom:100,left:100,right:100};
+
+		parseArgs();
+		createGraph();
+	}	
+
+	function parseArgs(){
+		if(args.margin) chart.margin = args.margin;
+	}
+
+	function createGraph(){
+		var margin = chart.margin,
+			width = chart.width - margin.left - margin.right,
+			height = chart.height - margin.top - margin.bottom
+
+
+		chart.svg().append("g")
+			.attr("transform","translate("+margin.left+","+margin.top+")")
+			.attr("class","chart")
+
+		chart.chart = function(){
+			return chart.svg().select(".chart")
+		}
+		register_resize()
+	}
+
+	function register_resize(){
+		if(chart.auto){
+			resize()
+			window.addEventListener("resize",resize);
+		}
+	}
+
+	function resize(){
+		getChart().attr("transform","translate("+(chart.margin.left*chart.scale)+","+(chart.margin.top*chart.scale)+")scale("+chart.scale+")")
+	}
+
+	function getChart(){
+		return chart.svg().select(".chart")
+	}
+
+	function args_check(){
+		if(args){
+			if(args.containerID){
+				return true;
+			}
+		}
+		return false;
+	}
+
+	if(args_check()) init()
+	return chart
+}
+
 
 
 /**
  * Create and draw a new barchart.
  * 
  * Arguments:
- *   containerID 
- *   size => a dictionary containing the following keys. [OPTIONAL]
+ *   
+ *   basic => a dictionary containing the following keys. [OPTIONAL]
+ *		  containerId => id of container to insert SVG. [REQUIRED]
  *        width => the width of the svg canvas. Default:960 [OPTIONAL]
  *        height => the height of the svg canvas. Default:500 [OPTIONAL]
  *        margin => a dictionary containing the margin infomation. [OPTIONAL]
@@ -17,9 +196,6 @@ hp.barchart = HP_barchart;
  *
  *   axis => a dictionary containing the following keys. [OPTIONAL] 
  *        horizontal:true
- * 		  ticks:
- *		  tickFormat:
- *		  
  *   
  *   data => an array containing dictionaries with following keys [REQUIRED]
  *        name => name [REQUIRED]
@@ -27,57 +203,56 @@ hp.barchart = HP_barchart;
  *        group =>  group [OPTIONAL]
  */
 function HP_barchart(args){
-	var valueFormat = d3.format(",.1%")
 	var barchart = {}
-	var region,x,y,xAxis,yAxis,ticks,tickFormat
+	var region,x,y,xAxis,yAxis
 	var bars_gap,transition_time,font_size
 	var private_arg = "barchart"
 
-	// console.log(args.containerID)
 	function init(){
-		var axistype = {x:"ordinal",y:"linear"}
-		barchart = hp.chart(args.containerID,args.size,axistype)
-		barchart.data = []
-		region=[]
+		barchart = hp.chart(args.basic)
 		barchart.horizontal = false;
 		parseArgs();
 		createGraph();
 	}
 
 	function parseArgs(){
-		if(args.data) barchart.data = args.data;
-		if(args.axis) {
-			if(args.axis.horizontal) barchart.horizontal = args.axis.horizontal;
-			if(args.axis.ticks)	ticks = args.axis.ticks;
-			if(args.axis.tickFormat) tickFormat = d3.format(args.axis.tickFormat);
+		if(args.data){
+			barchart.data = args.data;
+			region = []
+			barchart.data.forEach(function(d){
+		      region.push(d)
+		    })
 		}
+		if(args.axis) barchart.horizontal = args.axis.horizontal;
+
 		//hardcore arguments
 		bars_gap =.4
 		transition_time = 750
-		font_size = 12
+		font_size = 24
 	}
 
 	function createGraph(){
+
 		var margin = barchart.margin,
 			width = barchart.width - margin.left - margin.right,
 			height = barchart.height - margin.top - margin.bottom,
 			horizontal = barchart.horizontal
 
 		if(horizontal){
-		//if horizontal is true, logical x axis will appear as y axis
-	      x = barchart.yscale.range([0,width]).domain([0,0]);
-	      y = barchart.xscale.rangeRoundBands([0, height], bars_gap); 
+	      x = d3.scale.linear().range([0,width]).domain([0,0]);
+	      y = d3.scale.ordinal().rangeRoundBands([0, height], bars_gap); 
 	      xAxis = d3.svg.axis().scale(x).orient("bottom").tickSize(-height, 0, 5);
 	      yAxis = d3.svg.axis().scale(y).orient("left").tickSize(0, 0, 5); 
 	    }else{
-	      x = barchart.xscale.rangeRoundBands([0, width], bars_gap);
-	      y = barchart.yscale.range([height,0 ]).domain([0,0]);  
+	      x = d3.scale.ordinal().rangeRoundBands([0, width], bars_gap);
+	      y = d3.scale.linear().range([height,0 ]).domain([0,0]);  
 	      xAxis = d3.svg.axis().scale(x).orient("bottom").tickSize(0, 0, 5);
-	      yAxis = d3.svg.axis().scale(y).orient("left").tickSize(-width, 0, 5).tickPadding(8).ticks(ticks).tickFormat(tickFormat);
+	      yAxis = d3.svg.axis().scale(y).orient("left").tickSize(-width, 0, 5).tickPadding(8);
 	    }
 
 	    var c = barchart.chart().classed("barchart",true);
-	    c.append("g").attr("class","barchart_bars_group")
+	    var bars_group = c.append("g")
+	        .attr("class","barchart_bars_group")
 	    var axis_g = c.append("g")
 	        .attr("class","barchart_axis_group")
 	    //create x axis
@@ -96,8 +271,10 @@ function HP_barchart(args){
 			//check if there's new region
 			var addition_data = []
 			var exist_data = []
+			// var region = []
 
 			newdata.forEach(function(d){
+			  // region.push(d.name)
 			  if(region.indexOf(d.name)===-1){
 			    addition_data.push(d)
 			  }else{
@@ -178,7 +355,7 @@ function HP_barchart(args){
 			    .transition().duration(transition_time)
 			    .attr("x",function(d) { return x(d.value); })
 			    .attr("y", function(d) { return y(d.name)+y.rangeBand()/2; })
-			    .text(function(d){return valueFormat(d.value)})
+			    .text(function(d){return d.value})
 			}else{ 
 			  bars.select("rect")
 			    .transition().duration(transition_time)
@@ -190,7 +367,7 @@ function HP_barchart(args){
 			    .transition().duration(transition_time)
 			    .attr("x",function(d){return x(d.name)+x.rangeBand()/2;})
 			    .attr("y", function(d) { return y(d.value); })
-			    .text(function(d){return valueFormat(d.value)})
+			    .text(function(d){return d.value})
 			}
 			bars.exit().remove() //remove the old chart
 		}
@@ -215,11 +392,6 @@ function HP_barchart(args){
 	function get_y_axis(){
 		return get_axis_group().select(".y")
 	}
-
-	function args_check(){
-		return args.containerID?true:false;
-	}
-
-	if(args_check()) init()
+	if(args) init()
 	return barchart;
 }

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+.bar rect{
+  fill:#87CEFA;
+}
+/*.bar text{
+  font-size: 24px
+}*/
+.barchart .axis path{
+  fill: none;
+  stroke: #000;
+  stroke-width:2px;
+  shape-rendering: crispEdges;
+}
+.barchart .axis line{
+  shape-rendering: crispEdges;
+  stroke: #000;
+}
+.barchart .axis text{
+  font-size: 24px
+}
+.barchart .tick line{
+  stroke: #eee;
+  opacity: 0.5
+}
+/*.barchart .text{
+  font-size: 24px
+}*/
+/*
+.axis path {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.axis line {
+  shape-rendering: crispEdges;
+  stroke: #000;
+}*/
+</style>
+<body>
+<button id="test_hide">hide</button>
+<button id="test_show">show</button>
+<button id="test_fade">fade</button>
+<button id="test_exit">exit</button>
+<button id="test_reset">reset</button>
+<button id="test_update">update</button>
+<button id="test">test</button>
+
+<div id="test1" style="border:1px solid #CCCCCC;position:relative;"></div>
+<div id="test2"></div>
+<div id="test3"></div>
+<div id="test4"></div>
+</body>
+<script src="lib/jquery-1.9.1.js"></script>
+<script src="lib/d3.v3.min.js"></script>
+<script src="src/graph.js"></script>
+<script src="src/chart.js"></script>
+<script src="src/barchart.js"></script>
+
+<!-- <script src="src/multichart.js"></script> -->
+<script>
+(function(){
+  var args1 = {
+        containerID:"test1",
+        size:{auto:true},
+        data:[{name:"ag6",value:3},{name:"ag2",value:1},{name:"ag3",value:1},{name:"ag4",value:4},{name:"ag5",value:4}],
+        axis:{horizontal:false,ticks:4,tickFormat:",.2%"}
+      }
+  var args2 = {
+        basic:{containerID:"test2",auto:false},
+        data:[{name:"ag6",value:3},{name:"ag2",value:1},{name:"ag3",value:1},{name:"ag4",value:4},{name:"ag5",value:4}],
+        axis:{horizontal:true}
+      }
+  var barchartA = hp.barchart(args1);
+  // var barchartB = hp.barchart(args2);
+  // console.log(barchartA)
+  // console.log(barchartB)
+
+  $("#test_hide").click(function(){
+    barchartA.hide()
+  })
+  $("#test_exit").click(function(){
+    barchartA.exit()
+  })
+  $("#test_reset").click(function(){
+    barchartA.reset()
+  })
+  $("#test_show").click(function(){
+    barchartA.show()
+  })
+  $("#test_fade").click(function(){
+    barchartA.fade(0.5)
+  })
+  $("#test_update").click(function(){
+    // barchartA.update(args2.data)
+    barchartA.update(args2.data)
+  })
+  $("#test").click(function(){
+    // console.log(barchartA.get_svgID())
+    // console.log(barchartB.get_svgID())
+  })
+})()
+
+
+
+// setInterval(chartB.update(args2.data),10000)
+// hp.barchart()
+</script>
