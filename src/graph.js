@@ -33,9 +33,11 @@ function HP_graph(containerID,size){
 
 	function parseArgs(){
 		graph.containerID = containerID;
-		if(size.width) graph.width = size.width;
-		if(size.height) graph.height = size.height;
-		if(size.auto) graph.auto = size.auto;
+		if(size){
+			if(size.width) graph.width = size.width;
+			if(size.height) graph.height = size.height;
+			if(size.auto) graph.auto = size.auto;
+		}
 	}
 
 	function createGraph(){

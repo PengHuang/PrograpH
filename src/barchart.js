@@ -1,4 +1,4 @@
-var hp = hp||{"ID_counter":0,"events":{"resize":[]}}
+var hp = hp||{"ID_counter":0}
 
 hp.barchart = HP_barchart;
 
@@ -31,7 +31,6 @@ function HP_barchart(args){
 	var barchart = {}
 	var region,x,y,xAxis,yAxis,ticks,tickFormat
 	var bars_gap,transition_time,font_size
-	var private_arg = "barchart"
 
 	// console.log(args.containerID)
 	function init(){
@@ -77,9 +76,11 @@ function HP_barchart(args){
 	    }
 
 	    var c = barchart.chart().classed("barchart",true);
-	    c.append("g").attr("class","barchart_bars_group")
+
+	    c.append("g").attr("class","bars_group")
+
 	    var axis_g = c.append("g")
-	        .attr("class","barchart_axis_group")
+	        .attr("class","axis_group")
 	    //create x axis
 	    axis_g.append("g")
 	      .attr("class", "x axis")
@@ -201,11 +202,11 @@ function HP_barchart(args){
 	}
 
 	function get_bars_group(){
-		return barchart.chart().select(".barchart_bars_group")
+		return barchart.chart().select(".bars_group")
 	}
 
 	function get_axis_group(){
-		return barchart.chart().select(".barchart_axis_group")
+		return barchart.chart().select(".axis_group")
 	}
 
 	function get_x_axis(){
